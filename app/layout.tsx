@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   title: "Animated Routines - Discipline Frame by Frame",
   description: "Track your workouts with animated exercise guides",
   generator: "v0.app",
+  icons: {
+    icon: '/favicon.jpg',
+    shortcut: '/favicon.jpg',
+    apple: '/favicon.jpg',
+  },
 }
 
 export default function RootLayout({
@@ -20,6 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
+        <link rel="shortcut icon" href="/favicon.jpg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/favicon.jpg" />
+      </head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <div className="flex min-h-screen">
           <Suspense fallback={<div>Loading...</div>}>

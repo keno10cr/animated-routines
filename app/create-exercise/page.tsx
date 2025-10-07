@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,7 @@ import { Upload, X, Play, Pause } from "lucide-react"
 import { saveExercise, getExerciseById, generateId, type Exercise } from "@/lib/data"
 import { useRouter, useSearchParams } from "next/navigation"
 
-export default function CreateExercisePage() {
+function CreateExerciseForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [exerciseName, setExerciseName] = useState("")
@@ -257,5 +257,13 @@ export default function CreateExercisePage() {
         </Button>
       </div>
     </div>
+  )
+}
+
+export default function CreateExercisePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateExerciseForm />
+    </Suspense>
   )
 }

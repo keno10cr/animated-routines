@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,7 @@ interface RoutineExercise {
   order: number
 }
 
-export default function CreateRoutinePage() {
+function CreateRoutineForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [routineName, setRoutineName] = useState("")
@@ -339,5 +339,13 @@ export default function CreateRoutinePage() {
         </Button>
       </div>
     </div>
+  )
+}
+
+export default function CreateRoutinePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateRoutineForm />
+    </Suspense>
   )
 }

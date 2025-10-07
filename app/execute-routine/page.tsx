@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -12,7 +12,7 @@ import { playStartSound, playCompleteSound, playHalfwaySound, playDoneSound } fr
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 
-export default function ExecuteRoutinePage() {
+function ExecuteRoutineForm() {
   const searchParams = useSearchParams()
   const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null)
   const [routine, setRoutine] = useState<Routine | null>(null)
@@ -680,5 +680,13 @@ export default function ExecuteRoutinePage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ExecuteRoutinePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ExecuteRoutineForm />
+    </Suspense>
   )
 }

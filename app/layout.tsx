@@ -25,7 +25,7 @@ export default function RootLayout({
           <Suspense fallback={<div>Loading...</div>}>
             <Navigation />
           </Suspense>
-          <main className="flex-1 ml-64">{children}</main>
+          <main className="flex-1 md:ml-64 ml-0 pt-16 md:pt-0">{children}</main>
         </div>
         <Analytics />
       </body>

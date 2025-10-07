@@ -1,0 +1,275 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated color scheme for Animated Routines dark theme with gold, green, blue accents */
+  --background: #121212; /* Dark Gray for app background */
+  --foreground: #ffffff; /* White for primary text */
+  --card: #1f1f1f; /* Mid Gray for cards */
+  --card-foreground: #ffffff; /* White text on cards */
+  --popover: #1f1f1f; /* Mid Gray for popovers */
+  --popover-foreground: #ffffff; /* White text on popovers */
+  --primary: #ffd700; /* Gold for primary actions */
+  --primary-foreground: #121212; /* Dark text on primary buttons */
+  --secondary: #1e90ff; /* Dodger Blue for secondary actions */
+  --secondary-foreground: #121212; /* Dark text on secondary buttons */
+  --muted: #4b4b4b; /* Muted text for less emphasized information */
+  --muted-foreground: #ffffff; /* White text on muted backgrounds */
+  --accent: #32cd32; /* Lime Green for positive feedback */
+  --accent-foreground: #121212; /* Dark text on accent elements */
+  --destructive: #ff4500; /* Red Orange for alerts and critical actions */
+  --destructive-foreground: #ffffff; /* White text on destructive buttons */
+  --border: #374151; /* Dark border for separation */
+  --input: #404040; /* Input fields background */
+  --ring: #ffd700; /* Gold for focus rings */
+  --chart-1: #32cd32; /* Green for positive chart elements */
+  --chart-2: #1e90ff; /* Blue for secondary chart elements */
+  --chart-3: #ffd700; /* Gold for primary chart elements */
+  --chart-4: #ff4500; /* Red for alerts in charts */
+  --chart-5: #4b5563; /* Darker gray for additional chart elements */
+  --radius: 0.3125rem; /* 5px border radius for soft corners */
+  --sidebar: #1f1f1f; /* Sidebar background */
+  --sidebar-foreground: #ffffff; /* White text in sidebar */
+  --sidebar-primary: #ffd700; /* Gold for primary sidebar actions */
+  --sidebar-primary-foreground: #121212; /* Dark text on sidebar actions */
+  --sidebar-accent: #32cd32; /* Green for sidebar accents */
+  --sidebar-accent-foreground: #121212; /* Dark text on sidebar accents */
+  --sidebar-border: #374151; /* Border for sidebar separation */
+  --sidebar-ring: #ffd700; /* Focus ring for sidebar items */
+}
+
+.dark {
+  --background: #121212;
+  --foreground: #ffffff;
+  --card: #1f1f1f;
+  --card-foreground: #ffffff;
+  --popover: #1f1f1f;
+  --popover-foreground: #ffffff;
+  --primary: #ffd700;
+  --primary-foreground: #121212;
+  --secondary: #1e90ff;
+  --secondary-foreground: #121212;
+  --muted: #4b4b4b;
+  --muted-foreground: #ffffff;
+  --accent: #32cd32;
+  --accent-foreground: #121212;
+  --destructive: #ff4500;
+  --destructive-foreground: #ffffff;
+  --border: #374151;
+  --input: #404040;
+  --ring: #ffd700;
+  --chart-1: #32cd32;
+  --chart-2: #1e90ff;
+  --chart-3: #ffd700;
+  --chart-4: #ff4500;
+  --chart-5: #4b5563;
+  --sidebar: #1f1f1f;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffd700;
+  --sidebar-primary-foreground: #121212;
+  --sidebar-accent: #32cd32;
+  --sidebar-accent-foreground: #121212;
+  --sidebar-border: #374151;
+  --sidebar-ring: #ffd700;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Placeholder styling */
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-gray-400;
+  }
+  
+  /* Input and textarea styling */
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    @apply bg-input border-border text-foreground placeholder:text-gray-400;
+  }
+  
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  textarea:focus {
+    @apply border-primary ring-2 ring-primary/20;
+  }
+  
+  /* Make titles more prominent */
+  h1 {
+    @apply font-bold;
+  }
+  
+  h2 {
+    @apply font-bold;
+  }
+  
+  h3 {
+    @apply font-bold;
+  }
+  
+  h4 {
+    @apply font-bold;
+  }
+}
+
+/* Added custom animation for exercise images */
+@keyframes exercise-animation {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.exercise-animation {
+  animation: exercise-animation var(--animation-duration, 700ms) infinite;
+}
+
+/* Frame-based animation for proper timing */
+@keyframes frame-animation {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.frame-animation {
+  animation: frame-animation var(--frame-duration, 700ms) infinite;
+}
+
+/* Multi-frame animation for cycling through images */
+@keyframes multi-frame-animation {
+  0% {
+    opacity: 1;
+  }
+  49% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  99% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.multi-frame-animation {
+  animation: multi-frame-animation var(--frame-duration, 700ms) infinite;
+}
+
+/* Frame cycling animation - each frame shows for the full duration */
+@keyframes frame-cycle {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.frame-cycle {
+  animation: frame-cycle var(--frame-duration, 700ms) infinite;
+}
+
+/* Multi-frame infinite loop animation - cycles through frames */
+@keyframes infinite-frame-loop {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.infinite-frame-loop {
+  animation: infinite-frame-loop var(--frame-duration, 700ms) infinite;
+}
+
+/* Frame sequence animation for cycling through multiple frames */
+@keyframes frame-sequence {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.frame-sequence {
+  animation: frame-sequence var(--frame-duration, 700ms) infinite;
+}
+
+/* Exercise frame cycling - proper infinite loop */
+@keyframes exercise-frame-cycle {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.exercise-frame-cycle {
+  animation: exercise-frame-cycle var(--frame-duration, 700ms) infinite;
+}

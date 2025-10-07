@@ -56,10 +56,10 @@ export function Navigation() {
 
       {/* Sidebar - Desktop & Mobile */}
       <nav className={`
-        fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border p-4 z-40
+        fixed left-0 top-0 h-screen w-64 bg-sidebar border-r border-sidebar-border p-4 z-40
         mobile-menu
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        md:translate-x-0 md:static
+        md:translate-x-0 md:static md:h-screen
         transition-transform duration-300 ease-in-out
       `}>
         <div className="mb-8 mt-16 md:mt-0">

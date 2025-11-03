@@ -123,6 +123,83 @@ const DEFAULT_ROUTINE: Routine = {
   lastUsed: new Date().toISOString()
 }
 
+// New 30-minute workout exercises
+const DEFAULT_30MIN_EXERCISES: Exercise[] = [
+  {
+    id: 'warmup-1',
+    name: 'Calentamiento',
+    duration: 35,
+    restTime: 15,
+    images: ['/exercises/30min/1-warmup.jpg'],
+    description: 'Warm-up exercise to prepare your body',
+    animationSpeed: 1000
+  },
+  {
+    id: 'pushup-1',
+    name: 'Push Up',
+    duration: 35,
+    restTime: 15,
+    images: ['/exercises/30min/2-pushup.jpg'],
+    description: 'Classic push-up exercise for upper body strength',
+    animationSpeed: 1000
+  },
+  {
+    id: 'abs-1',
+    name: 'Abs',
+    duration: 35,
+    restTime: 15,
+    images: ['/exercises/30min/3-abs.jpg'],
+    description: 'Core strengthening exercise',
+    animationSpeed: 1000
+  },
+  {
+    id: 'calves-1',
+    name: 'Pantorillas',
+    duration: 35,
+    restTime: 15,
+    images: ['/exercises/30min/4-pantorillas.jpg'],
+    description: 'Calf exercise (Pantorillas) for lower leg strength',
+    animationSpeed: 1000
+  },
+  {
+    id: 'arms-1',
+    name: 'Arms',
+    duration: 35,
+    restTime: 15,
+    images: ['/exercises/30min/5-arms.jpg'],
+    description: 'Arm strengthening exercise',
+    animationSpeed: 1000
+  },
+  {
+    id: 'squats-1',
+    name: 'Sentadillas',
+    duration: 35,
+    restTime: 15,
+    images: ['/exercises/30min/6-sentadillas.jpg'],
+    description: 'Squat exercise (Sentadillas) for leg strength',
+    animationSpeed: 1000
+  },
+  {
+    id: 'triceps-1',
+    name: 'Triceps',
+    duration: 35,
+    restTime: 25,
+    images: ['/exercises/30min/7-triceps.jpg'],
+    description: 'Triceps strengthening exercise',
+    animationSpeed: 1000
+  }
+]
+
+// New default routine: "30 min"
+const DEFAULT_30MIN_ROUTINE: Routine = {
+  id: 'routine-30min',
+  name: '30 min',
+  description: 'A complete 30-minute workout routine',
+  sets: 5,
+  exercises: DEFAULT_30MIN_EXERCISES,
+  createdAt: new Date().toISOString()
+}
+
 // Generic storage functions
 function getFromStorage<T>(key: string, defaultValue: T): T {
   if (typeof window === 'undefined') return defaultValue
@@ -145,8 +222,35 @@ function saveToStorage<T>(key: string, value: T): void {
 
 // Routines
 export function getRoutines(): Routine[] {
-  const routines = getFromStorage(ROUTINES_KEY, [DEFAULT_ROUTINE])
-  return routines
+  const stored = getFromStorage(ROUTINES_KEY, [])
+  // If no stored routines, return both defaults
+  if (stored.length === 0) {
+    return [DEFAULT_ROUTINE, DEFAULT_30MIN_ROUTINE]
+  }
+  
+  // Migrate any blob URLs in routine exercises (async, updates storage in background)
+  stored.forEach((routine: Routine) => {
+    routine.exercises.forEach((exercise: Exercise) => {
+      const hasBlobUrls = exercise.images.some((img: string) => img.startsWith('blob:'))
+      if (hasBlobUrls) {
+        // Migrate blob URLs asynchronously
+        migrateBlobUrls(exercise.images).then((convertedImages) => {
+          const updatedExercise = { ...exercise, images: convertedImages }
+          const currentRoutines = getFromStorage(ROUTINES_KEY, [])
+          const routineIndex = currentRoutines.findIndex((r: Routine) => r.id === routine.id)
+          if (routineIndex >= 0) {
+            const exerciseIndex = currentRoutines[routineIndex].exercises.findIndex((e: Exercise) => e.id === exercise.id)
+            if (exerciseIndex >= 0) {
+              currentRoutines[routineIndex].exercises[exerciseIndex] = updatedExercise
+              saveToStorage(ROUTINES_KEY, currentRoutines)
+            }
+          }
+        })
+      }
+    })
+  })
+  
+  return stored
 }
 
 export function saveRoutine(routine: Routine): void {
@@ -175,7 +279,33 @@ export function getRoutineById(id: string): Routine | null {
 
 // Exercises
 export function getExercises(): Exercise[] {
-  return getFromStorage(EXERCISES_KEY, DEFAULT_EXERCISES)
+  const stored = getFromStorage(EXERCISES_KEY, [])
+  // If no stored exercises, return both defaults
+  if (stored.length === 0) {
+    return [...DEFAULT_EXERCISES, ...DEFAULT_30MIN_EXERCISES]
+  }
+  
+  // Migrate any blob URLs to base64 (async, updates storage in background)
+  let needsUpdate = false
+  const migratedExercises = stored.map((exercise: Exercise) => {
+    const hasBlobUrls = exercise.images.some((img: string) => img.startsWith('blob:'))
+    if (hasBlobUrls) {
+      needsUpdate = true
+      // Migrate blob URLs asynchronously
+      migrateBlobUrls(exercise.images).then((convertedImages) => {
+        const updatedExercise = { ...exercise, images: convertedImages }
+        const currentExercises = getFromStorage(EXERCISES_KEY, [])
+        const index = currentExercises.findIndex((e: Exercise) => e.id === exercise.id)
+        if (index >= 0) {
+          currentExercises[index] = updatedExercise
+          saveToStorage(EXERCISES_KEY, currentExercises)
+        }
+      })
+    }
+    return exercise
+  })
+  
+  return migratedExercises
 }
 
 export function saveExercise(exercise: Exercise): void {
@@ -234,5 +364,47 @@ export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
   return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+}
+
+// Image conversion utilities
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+export async function blobToBase64(blobUrl: string): Promise<string> {
+  if (!blobUrl.startsWith('blob:')) {
+    return blobUrl // Already base64 or regular URL
+  }
+  
+  try {
+    const response = await fetch(blobUrl)
+    const blob = await response.blob()
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch (error) {
+    console.error('Error converting blob to base64:', error)
+    return blobUrl // Fallback
+  }
+}
+
+// Migrate blob URLs to base64 when loading exercises/routines
+export async function migrateBlobUrls(images: string[]): Promise<string[]> {
+  return Promise.all(
+    images.map(async (image) => {
+      if (image.startsWith('blob:')) {
+        return await blobToBase64(image)
+      }
+      return image
+    })
+  )
 }
 

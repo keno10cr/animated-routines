@@ -13,8 +13,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 interface RoutineExercise {
   id: string
   name: string
-  duration: number
-  restTime: number
+  duration: number | ""
+  restTime: number | ""
   order: number
 }
 
@@ -23,7 +23,7 @@ function CreateRoutineForm() {
   const searchParams = useSearchParams()
   const [routineName, setRoutineName] = useState("")
   const [routineDescription, setRoutineDescription] = useState("")
-  const [sets, setSets] = useState(1)
+  const [sets, setSets] = useState<number | "">(1)
   const [exercises, setExercises] = useState<RoutineExercise[]>([])
   const [availableExercises, setAvailableExercises] = useState<Exercise[]>([])
   const [animatingExercise, setAnimatingExercise] = useState<string | null>(null)
@@ -46,8 +46,8 @@ function CreateRoutineForm() {
         setExercises(routine.exercises.map(ex => ({
           id: ex.id,
           name: ex.name,
-          duration: ex.duration,
-          restTime: ex.restTime,
+          duration: ex.duration as number | "",
+          restTime: ex.restTime as number | "",
           order: 0 // Will be set properly
         })))
       }
@@ -79,7 +79,7 @@ function CreateRoutineForm() {
     }
   }
 
-  const updateExercise = (id: string, field: "duration" | "restTime", value: number) => {
+  const updateExercise = (id: string, field: "duration" | "restTime", value: number | "") => {
     setExercises(exercises.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex)))
   }
 
@@ -92,12 +92,12 @@ function CreateRoutineForm() {
       id: routineId || generateId(),
       name: routineName,
       description: routineDescription,
-      sets,
+      sets: typeof sets === "number" ? sets : 1,
       exercises: exercises.map(ex => ({
         id: ex.id,
         name: ex.name,
-        duration: ex.duration,
-        restTime: ex.restTime,
+        duration: typeof ex.duration === "number" ? ex.duration : 30,
+        restTime: typeof ex.restTime === "number" ? ex.restTime : 10,
         images: availableExercises.find(ae => ae.name === ex.name)?.images || [],
         description: availableExercises.find(ae => ae.name === ex.name)?.description || "",
         animationSpeed: availableExercises.find(ae => ae.name === ex.name)?.animationSpeed || 700
@@ -136,7 +136,7 @@ function CreateRoutineForm() {
                 value={routineName}
                 onChange={(e) => setRoutineName(e.target.value)}
                 placeholder="e.g., Morning Strength Training"
-                className="mt-2"
+                className="mt-2 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
               />
             </div>
 
@@ -147,7 +147,7 @@ function CreateRoutineForm() {
                 value={routineDescription}
                 onChange={(e) => setRoutineDescription(e.target.value)}
                 placeholder="Describe your routine..."
-                className="mt-2"
+                className="mt-2 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
                 rows={3}
               />
             </div>
@@ -159,8 +159,18 @@ function CreateRoutineForm() {
                 type="number"
                 min="1"
                 value={sets}
-                onChange={(e) => setSets(Number.parseInt(e.target.value) || 1)}
-                className="mt-2"
+                onChange={(e) => {
+                  const value = e.target.value
+                  setSets(value === "" ? "" : Number.parseInt(value) || "")
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value
+                  const parsed = Number.parseInt(value)
+                  if (value === "" || isNaN(parsed) || parsed < 1) {
+                    setSets(1)
+                  }
+                }}
+                className="mt-2 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
               />
             </div>
 
@@ -296,10 +306,18 @@ function CreateRoutineForm() {
                           type="number"
                           min="1"
                           value={exercise.duration}
-                          onChange={(e) =>
-                            updateExercise(exercise.id, "duration", Number.parseInt(e.target.value) || 30)
-                          }
-                          className="mt-1"
+                          onChange={(e) => {
+                            const value = e.target.value
+                            updateExercise(exercise.id, "duration", value === "" ? "" : Number.parseInt(value) || "")
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value
+                            const parsed = Number.parseInt(value)
+                            if (value === "" || isNaN(parsed) || parsed < 1) {
+                              updateExercise(exercise.id, "duration", 30)
+                            }
+                          }}
+                          className="mt-1 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
                         />
                       </div>
                       <div>
@@ -311,10 +329,18 @@ function CreateRoutineForm() {
                           type="number"
                           min="0"
                           value={exercise.restTime}
-                          onChange={(e) =>
-                            updateExercise(exercise.id, "restTime", Number.parseInt(e.target.value) || 10)
-                          }
-                          className="mt-1"
+                          onChange={(e) => {
+                            const value = e.target.value
+                            updateExercise(exercise.id, "restTime", value === "" ? "" : Number.parseInt(value) || "")
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value
+                            const parsed = Number.parseInt(value)
+                            if (value === "" || isNaN(parsed) || parsed < 0) {
+                              updateExercise(exercise.id, "restTime", 10)
+                            }
+                          }}
+                          className="mt-1 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
                         />
                       </div>
                     </div>

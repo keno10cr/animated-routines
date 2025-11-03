@@ -609,10 +609,10 @@ function ExecuteRoutineForm() {
 
               return nextExercise ? (
                 <div className="mt-6 flex justify-center">
-                  <div className="p-6 bg-muted/20 rounded-lg border border-border max-w-sm">
+                  <div className="p-6 bg-muted/20 rounded-lg border border-border max-w-md w-full">
                     <h4 className="text-lg font-semibold text-muted-foreground mb-4 text-center">Up Next</h4>
                     <div className="flex flex-col items-center gap-4">
-                      <div className="relative w-24 h-24 bg-muted/20 rounded-lg overflow-hidden border border-border">
+                      <div className="relative w-full aspect-square bg-muted/20 rounded-lg overflow-hidden border border-border max-w-xs">
                         {nextExercise.images.length === 1 ? (
                           <img
                             src={nextExercise.images[0] || "/placeholder.svg"}

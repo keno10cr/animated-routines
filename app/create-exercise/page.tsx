@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Upload, X, Play, Pause } from "lucide-react"
-import { saveExercise, getExerciseById, generateId, type Exercise } from "@/lib/data"
+import { saveExercise, getExerciseById, generateId, fileToBase64, migrateBlobUrls, type Exercise } from "@/lib/data"
 import { useRouter, useSearchParams } from "next/navigation"
 
 function CreateExerciseForm() {
@@ -18,7 +18,7 @@ function CreateExerciseForm() {
   const [exerciseName, setExerciseName] = useState("")
   const [exerciseDescription, setExerciseDescription] = useState("")
   const [images, setImages] = useState<string[]>([])
-  const [previewRate, setPreviewRate] = useState(700)
+  const [previewRate, setPreviewRate] = useState<number | "">(700)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [exerciseId, setExerciseId] = useState<string | null>(null)
@@ -32,8 +32,18 @@ function CreateExerciseForm() {
         setExerciseId(editId)
         setExerciseName(exercise.name)
         setExerciseDescription(exercise.description || "")
-        setImages(exercise.images)
-        setPreviewRate(exercise.animationSpeed || 700)
+        
+        // Migrate any blob URLs to base64
+        migrateBlobUrls(exercise.images).then((convertedImages) => {
+          setImages(convertedImages)
+          setPreviewRate(exercise.animationSpeed || 700)
+          
+          // If we converted blob URLs, update the exercise in storage
+          if (convertedImages.some((img, idx) => img !== exercise.images[idx])) {
+            const updatedExercise = { ...exercise, images: convertedImages }
+            saveExercise(updatedExercise)
+          }
+        })
       }
     }
   }, [searchParams])
@@ -41,8 +51,17 @@ function CreateExerciseForm() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
-      const newImages = Array.from(files).map((file) => URL.createObjectURL(file))
-      setImages([...images, ...newImages])
+      const fileArray = Array.from(files)
+      
+      // Convert each file to base64 for persistence
+      Promise.all(
+        fileArray.map((file) => fileToBase64(file))
+      ).then((base64Images) => {
+        setImages([...images, ...base64Images])
+      }).catch((error) => {
+        console.error('Error converting images to base64:', error)
+        alert('Error uploading images. Please try again.')
+      })
     }
   }
 
@@ -62,7 +81,7 @@ function CreateExerciseForm() {
       images,
       duration: 30, // Default duration
       restTime: 10, // Default rest time
-      animationSpeed: previewRate
+      animationSpeed: typeof previewRate === "number" ? previewRate : 700
     }
     
     saveExercise(exerciseData)
@@ -96,7 +115,7 @@ function CreateExerciseForm() {
                 value={exerciseName}
                 onChange={(e) => setExerciseName(e.target.value)}
                 placeholder="e.g., Diamond Push-ups"
-                className="mt-2"
+                className="mt-2 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
               />
             </div>
 
@@ -107,7 +126,7 @@ function CreateExerciseForm() {
                 value={exerciseDescription}
                 onChange={(e) => setExerciseDescription(e.target.value)}
                 placeholder="Describe how to perform this exercise..."
-                className="mt-2"
+                className="mt-2 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
                 rows={4}
               />
             </div>
@@ -121,8 +140,20 @@ function CreateExerciseForm() {
                 max="2000"
                 step="100"
                 value={previewRate}
-                onChange={(e) => setPreviewRate(Number.parseInt(e.target.value) || 700)}
-                className="mt-2"
+                onChange={(e) => {
+                  const value = e.target.value
+                  setPreviewRate(value === "" ? "" : Number.parseInt(value) || "")
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value
+                  const parsed = Number.parseInt(value)
+                  if (value === "" || isNaN(parsed) || parsed < 100) {
+                    setPreviewRate(700)
+                  } else if (parsed > 2000) {
+                    setPreviewRate(2000)
+                  }
+                }}
+                className="mt-2 !bg-white !text-black placeholder:!text-gray-500 !border-gray-300 focus-visible:!border-primary focus-visible:!ring-primary"
               />
               <p className="text-sm text-muted-foreground mt-1">
                 Lower values = faster animation (100 = super fast, 700 = ideal)
